@@ -1,4 +1,33 @@
 #!/usr/bin/env bash
+
+set -e -u
+
+SERVER_HOST=${SERVER_HOST:-"omeroserver"}
+SERVER_PORT=${SERVER_PORT:-"4064"}
+SERVER_NAME=${SERVER_NAME:-"root"}
+SERVER_PASS=${SERVER_PASS:-"omero"}
+
+
+# Try 10 times over 100 seconds to login
+set +u; source /opt/omego/bin/activate; set -u
+for try in {1..60} ; do
+    /opt/OMERO.py/bin/omero login \
+            -s $SERVER_HOST -p $SERVER_PORT -u "$SERVER_PASS" -w "$SERVER_PASS" \
+            2>/dev/null  >/dev/null \
+        && break \
+        || echo "$try: OMERO.server is unavailable - sleeping 10s"
+    sleep 10
+done
+
+
+if (($try == 60));
+then
+    echo "failed to connect"
+    exit 1
+fi
+
+
+
 cat <<EOF | R --no-save
 library(devtools)
 devtools::test()

@@ -54,6 +54,17 @@ RUN install2.r --error rJava \
 ##
 #########################################################################################
 
+# Install OMERO.py as a convenience
+RUN true \
+    && apt-get update \
+    && apt-get install -y python-dev python-virtualenv \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && virtualenv /opt/omego --system-site-packages \
+    && /opt/omego/bin/pip install omego \
+    && (cd /opt/; /opt/omego/bin/omego download python --sym OMERO.py) \
+    && /opt/omego/bin/pip install -r /opt/OMERO.py/share/web/requirements-py27.txt
+
 RUN useradd -ms /bin/bash t && chown -R t /src/
 RUN chown t /usr/local/lib/R/site-library
 USER t
